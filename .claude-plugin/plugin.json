@@ -1,0 +1,10 @@
+{
+  "name": "codex-reviews-claudes-build-loop",
+  "version": "0.1.0",
+  "description": "Spec-first Build Loop for Claude Code: Claude builds, Codex CLI independently reviews the plan and the finished phase. Requires Codex CLI.",
+  "author": {
+    "name": "David"
+  },
+  "license": "MIT",
+  "keywords": ["build", "spec-driven", "code-review", "codex", "architecture", "agents-md"]
+}

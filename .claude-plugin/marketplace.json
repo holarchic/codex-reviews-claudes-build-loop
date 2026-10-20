@@ -1,0 +1,14 @@
+{
+  "name": "codex-reviews-claudes-build-loop",
+  "description": "The build and codex-review skills for Claude Code.",
+  "owner": {
+    "name": "David"
+  },
+  "plugins": [
+    {
+      "name": "codex-reviews-claudes-build-loop",
+      "source": "./",
+      "description": "Spec-first Build Loop with external plan and phase review."
+    }
+  ]
+}
