@@ -2,7 +2,22 @@
 
 Spec-first Build Loop for Claude Code: Claude builds, Codex CLI independently reviews the plan and the finished phase.
 
-> **Status:** v0.2.0, October 2026. In daily use, but the rubric and prompts still change. There is no measured evidence yet that the loop beats Claude working alone. The eval under `eval/` is testing that.
+> **Status:** v0.2.0, October 2026. In daily use, but the rubric and prompts still change. In 83 review-fix commits across three projects, reviews caught 248 code defects the writer's own tests missed, mostly edge cases and error paths ([census](eval/census/SUMMARY.md)). In use, the loop also catches spec drift and missing tests. A controlled replay against Claude alone is under way in `eval/`.
+
+A first-round architecture verdict from the eval pilot, verbatim apart from a shortened path:
+
+```text
+VERDICT: YELLOW
+SUMMARY: The implementation appears to meet TASK.md’s behavior, with two architecture issues: internal positional tuples and an implicit public export surface.
+
+ISSUES:
+
+1. [MEDIUM] deps.py:26 — Missing dependencies and Tarjan traversal frames are stored as positional tuples, so callers identify fields by position (also lines 35, 76, 84).
+   Fix: Use named records, such as `NamedTuple` or dataclasses, for missing-dependency pairs and traversal frames.
+
+2. [LOW] deps.py:1 — The module has no explicit `__all__`; `heapq`, `Iterable`, and `Mapping` are also accessible as public module attributes, despite SPEC.md saying no other names are part of the public surface.
+   Fix: Declare `__all__` with only `resolve`, `MissingDependencyError`, and `CycleError`.
+```
 
 ## Why
 
@@ -69,18 +84,47 @@ Larger codebases cost more, because the reviewer reads every touched module.
 
 ## Install
 
-```
-/plugin marketplace add holarchic/codex-reviews-claudes-build-loop
-/plugin install codex-reviews-claudes-build-loop@codex-reviews-claudes-build-loop
+Paste this into Claude Code:
+
+```text
+Install the codex-reviews-claudes-build-loop plugin for me by following the Install steps in
+https://github.com/holarchic/codex-reviews-claudes-build-loop#install
 ```
 
-Check that `codex --version` runs. If a review fails with a model error, update the CLI first.
+The agent runs these from a terminal:
+
+```
+codex --version            # Codex CLI is on PATH; if not, stop and ask the user to install it and run `codex login`
+claude plugin marketplace add holarchic/codex-reviews-claudes-build-loop
+claude plugin install codex-reviews-claudes-build-loop@codex-reviews-claudes-build-loop
+claude plugin list         # expect codex-reviews-claudes-build-loop in the list
+```
+
+Restart Claude Code so the skills load. Inside a session, `/plugin marketplace add` and `/plugin install` do the same.
 
 **Manual:** copy `skills/build-loop/` and `skills/codex-review/` into `~/.claude/skills/`. Keep them side by side, because codex-review reads the rubric from `../build-loop/references/`.
 
-Plugin skills are namespaced, so the full command is `/codex-reviews-claudes-build-loop:build-loop plan`. The bare `/build-loop` works unless another command claims it. Claude also picks the skill up from plain requests like "plan this" or "build it".
+## Usage
 
-Only Claude and Codex are supported for now. The reviewer is called in one place, `skills/codex-review/SKILL.md` § Invocation, and the prompts, rubric and verdict format don't depend on the model. PRs for Gemini or Grok are welcome.
+| Command | Does |
+|---|---|
+| `/build-loop plan` | Steps 1–2: read SPEC, write the plan, stop. |
+| `/build-loop build` or `implement` | The whole loop. |
+| `/codex-review plan <path>` | Review one plan file. |
+| `/codex-review` | Review uncommitted work, or the last commit if the tree is clean. |
+| `/codex-review --base <ref>`, `--commit <sha>`, `--uncommitted` | Review a fixed scope. |
+
+Plugin skills are namespaced, so the full form is `/codex-reviews-claudes-build-loop:build-loop plan`. The bare `/build-loop` works unless another command claims it. Claude also picks the skill up from plain requests like "plan this" or "build it".
+
+## Configuration
+
+| File | Controls |
+|---|---|
+| `~/.codex/config.toml` | The Codex model. Reasoning effort is pinned to `high` in every review call. |
+| `skills/build-loop/references/code-architecture-rules.md` | The rubric both passes grade against. |
+| `skills/codex-review/SKILL.md` § Invocation | The one place the reviewer is called. |
+
+If a review fails with a model error, update the Codex CLI first. Only Claude and Codex are supported for now. The prompts, rubric and verdict format don't depend on the model, so another reviewer means changing § Invocation only.
 
 ## Development
 
@@ -89,6 +133,10 @@ Only Claude and Codex are supported for now. The reviewer is called in one place
 ```
 python3 -m unittest discover -s eval/tests -t .    # expect: OK
 ```
+
+## Contributing
+
+Issues and PRs are welcome, especially adapters for other reviewers (Gemini, Grok). See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Credits
 
