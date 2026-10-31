@@ -9,11 +9,7 @@ claude plugin marketplace add ./
 claude plugin install codex-reviews-claudes-build-loop@codex-reviews-claudes-build-loop
 ```
 
-The eval needs only Python 3 and its standard library. Run its tests from the repo root:
-
-```
-python3 -m unittest discover -s eval/tests -t .    # expect: OK
-```
+Validate the plugin with `claude plugin validate .` (expect exit 0). The eval harness lives in [do-llm-reviews-improve-code](https://github.com/holarchic/do-llm-reviews-improve-code).
 
 ## Conventions
 

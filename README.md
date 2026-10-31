@@ -2,7 +2,7 @@
 
 Spec-first Build Loop for Claude Code: Claude builds, Codex CLI independently reviews the plan and the finished phase.
 
-> **Status:** v0.2.0, October 2026. In daily use, but the rubric and prompts still change. In 83 review-fix commits across three projects, reviews caught 248 code defects the writer's own tests missed, mostly edge cases and error paths ([census](eval/census/SUMMARY.md)). In use, the loop also catches spec drift and missing tests. A controlled replay against Claude alone is under way in `eval/`.
+> **Status:** v0.2.1, October 2026. In daily use, but the rubric and prompts still change. In 83 review-fix commits across three projects, reviews caught 248 code defects the writer's own tests missed, mostly edge cases and error paths ([census](https://github.com/holarchic/do-llm-reviews-improve-code/blob/main/eval/census/SUMMARY.md)). In use, the loop also catches spec drift and missing tests. The controlled replay against Claude alone lives in [do-llm-reviews-improve-code](https://github.com/holarchic/do-llm-reviews-improve-code): v1 avoided +27.5 points more of those defects but failed its feature and regression guards, so its pre-registered verdict is no effect.
 
 A first-round architecture verdict from the eval pilot, verbatim apart from a shortened path:
 
@@ -128,11 +128,7 @@ If a review fails with a model error, update the Codex CLI first. Only Claude an
 
 ## Development
 
-`eval/` is operator tooling that measures whether the loop improves a model's code. The skills never load it. Its structure is in [ARCHITECTURE.md](ARCHITECTURE.md).
-
-```
-python3 -m unittest discover -s eval/tests -t .    # expect: OK
-```
+The plugin is markdown skills only; its structure is in [ARCHITECTURE.md](ARCHITECTURE.md). The harness that measures whether the loop improves a model's code is a separate repo, [do-llm-reviews-improve-code](https://github.com/holarchic/do-llm-reviews-improve-code).
 
 ## Contributing
 
